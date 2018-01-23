@@ -7,8 +7,7 @@ public class QueryEngine {
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		
-		
+		// args[0] contains sql query string
 		
 		while(true)
 		{
