@@ -1,4 +1,9 @@
 
-public interface MetadataReader {
+public interface MetadataReader 
+{
+	
+	void readMetadata(String metadataFilePath);
+	
+	void initMapVariables();
 
 }
