@@ -12,7 +12,7 @@ public class QueryEngine {
 		
 		while(true)
 		{
-			new TGSqlParser(arg0)
+		
 			TGSqlParser sqlParser = new TGSqlParser(EDbVendor.dbvmysql);
 			sqlParser.sqltext = "select p,q,r from A,B";
 			if(sqlParser.parse() == 0)
