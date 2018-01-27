@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Map;
 
 import gudusoft.gsqlparser.EDbVendor;
 import gudusoft.gsqlparser.TGSqlParser;
@@ -20,6 +21,8 @@ public interface SqlParser
 	ArrayList<String> getFromTableNames(TSelectSqlStatement statement);
 	
 	ArrayList<String> getSelectColumnNames(TSelectSqlStatement statement);
+	
+	Map<String, ArrayList<ArrayList<String>>> populateTableData(ArrayList<String> tableNames, FileOperationsImplementation fileOperationsImplementation) throws Exception;
 	
 	
 	

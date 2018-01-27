@@ -27,6 +27,8 @@ public class QueryEngine {
 			sqlParserImplementation.attachQueryToParser(sqlParser, args[0]);
 			TSelectSqlStatement statement = sqlParserImplementation.getParsedStatement(sqlParser);
 			
+			FileOperationsImplementation fileOperationsImplementation = new FileOperationsImplementation();
+			
 			
 			ArrayList<String> fromTableNames = sqlParserImplementation.getFromTableNames(statement);
 			
@@ -35,8 +37,16 @@ public class QueryEngine {
 				throw new Exception("tables do not exist");
 			}
 			
+			
+			Map<String, ArrayList<ArrayList<String>>> tableData = sqlParserImplementation.populateTableData(fromTableNames, fileOperationsImplementation);
+			
+			System.out.println("table data loaded");
+			
+			
 			ArrayList<String> selectColumnsNames = sqlParserImplementation.getSelectColumnNames(statement);
 			
+			
+			System.out.println(statement.getWhereClause());
 			
 			
 			System.out.println(sqlParserImplementation.getTableCount(statement));

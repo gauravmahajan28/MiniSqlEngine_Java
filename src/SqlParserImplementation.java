@@ -1,4 +1,6 @@
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import gudusoft.gsqlparser.EDbVendor;
 import gudusoft.gsqlparser.TGSqlParser;
@@ -70,6 +72,24 @@ public class SqlParserImplementation implements SqlParser{
 			selectColumnNames.add(fieldName);
 		}
 		return selectColumnNames;
+	}
+
+	@Override
+	public Map<String, ArrayList<ArrayList<String>>> populateTableData(
+			ArrayList<String> tableNames, FileOperationsImplementation fileOperationsImplementation) throws Exception 
+			{
+		// TODO Auto-generated method stub
+
+		Map<String, ArrayList<ArrayList<String>>> tableData = new HashMap<>();
+		
+		for(int count = 0; count < tableNames.size(); count++)
+		{
+			ArrayList<ArrayList<String>> data = fileOperationsImplementation.readFile(tableNames.get(count));
+			tableData.put(tableNames.get(count), data);
+		}
+		
+		return tableData;
+		
 	}
 
 }
