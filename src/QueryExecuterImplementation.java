@@ -42,6 +42,65 @@ public class QueryExecuterImplementation implements QueryExecutionInterface
 			// handles special case
 			if(fromTableNames.size() > 2)
 			{
+				ArrayList<ArrayList<String>> tempOutputData = new ArrayList<>();
+				for(int count = 0; count < tableData.get(fromTableNames.get(0)).size(); count++)
+				{
+					for(int innerCount = 0; innerCount < tableData.get(fromTableNames.get(1)).size(); innerCount++)
+					{
+						ArrayList<String> row = new ArrayList<>();
+						row.addAll(tableData.get(fromTableNames.get(0)).get(count));
+						row.addAll(tableData.get(fromTableNames.get(1)).get(innerCount));
+						if(isDistinctFound == 1 &&   mapForDistinct.get(row) == null)
+						{
+							tempOutputData.add(row);
+							mapForDistinct.put(row, new Boolean(true));
+						}
+						else if(isDistinctFound == 0)
+						{
+							tempOutputData.add(row);
+						}
+							
+					}
+				} // for
+				
+				
+				for(int tableCount = 2; tableCount < fromTableNames.size(); tableCount++)
+				{
+					
+					ArrayList<ArrayList<String>> tempData = new ArrayList<>();
+					
+					
+					for(int count = 0; count < tempOutputData.size(); count++)
+					{
+						for(int innerCount = 0; innerCount < tableData.get(fromTableNames.get(tableCount)).size(); innerCount++)
+						{
+							ArrayList<String> row = new ArrayList<>();
+							row.addAll(tempOutputData.get(count));
+							row.addAll(tableData.get(fromTableNames.get(tableCount)).get(innerCount));
+							if(isDistinctFound == 1 &&   mapForDistinct.get(row) == null)
+							{
+								tempData.add(row);
+								mapForDistinct.put(row, new Boolean(true));
+							}
+							else if(isDistinctFound == 0)
+							{
+								tempData.add(row);
+							}
+								
+						}
+					} // for
+					
+					
+					
+					tempOutputData.clear();
+					tempOutputData.addAll(tempData);
+					
+					
+				} // for
+				
+				outputData.addAll(tempOutputData);
+				
+	
 				
 			} //if
 			else
@@ -360,7 +419,51 @@ public class QueryExecuterImplementation implements QueryExecutionInterface
 			// handles special case
 			if(fromTableNames.size() > 2)
 			{
+				ArrayList<ArrayList<String>> tempOutputData = new ArrayList<>();
+				for(int count = 0; count < tableData.get(fromTableNames.get(0)).size(); count++)
+				{
+					for(int innerCount = 0; innerCount < tableData.get(fromTableNames.get(1)).size(); innerCount++)
+					{
+						ArrayList<String> row = new ArrayList<>();
+						row.addAll(tableData.get(fromTableNames.get(0)).get(count));
+						row.addAll(tableData.get(fromTableNames.get(1)).get(innerCount));
+						tempOutputData.add(row);
+						
+							
+					}
+				} // for
 				
+				
+				for(int tableCount = 2; tableCount < fromTableNames.size(); tableCount++)
+				{
+					
+					ArrayList<ArrayList<String>> tempData = new ArrayList<>();
+					
+					
+					for(int count = 0; count < tempOutputData.size(); count++)
+					{
+						for(int innerCount = 0; innerCount < tableData.get(fromTableNames.get(tableCount)).size(); innerCount++)
+						{
+							ArrayList<String> row = new ArrayList<>();
+							row.addAll(tempOutputData.get(count));
+							row.addAll(tableData.get(fromTableNames.get(tableCount)).get(innerCount));
+							tempData.add(row);
+							
+								
+						}
+					} // for
+					
+					
+					
+					tempOutputData.clear();
+					tempOutputData.addAll(tempData);
+					
+					
+				} // for
+				
+				outputData.addAll(tempOutputData);
+				
+		
 			} //if
 			else
 			{
@@ -532,6 +635,66 @@ public class QueryExecuterImplementation implements QueryExecutionInterface
 			// handles special case
 			if(fromTableNames.size() > 2)
 			{
+				ArrayList<ArrayList<String>> tempOutputData = new ArrayList<>();
+				for(int count = 0; count < tableData.get(fromTableNames.get(0)).size(); count++)
+				{
+					for(int innerCount = 0; innerCount < tableData.get(fromTableNames.get(1)).size(); innerCount++)
+					{
+						ArrayList<String> row = new ArrayList<>();
+						row.addAll(tableData.get(fromTableNames.get(0)).get(count));
+						row.addAll(tableData.get(fromTableNames.get(1)).get(innerCount));
+						if(isDistinctFound == 1 &&   mapForDistinct.get(row) == null)
+						{
+							tempOutputData.add(row);
+							mapForDistinct.put(row, new Boolean(true));
+						}
+						else if(isDistinctFound == 0)
+						{
+							tempOutputData.add(row);
+						}
+							
+					}
+				} // for
+				
+				
+				for(int tableCount = 2; tableCount < fromTableNames.size(); tableCount++)
+				{
+					
+					ArrayList<ArrayList<String>> tempData = new ArrayList<>();
+					
+					
+					for(int count = 0; count < tempOutputData.size(); count++)
+					{
+						for(int innerCount = 0; innerCount < tableData.get(fromTableNames.get(tableCount)).size(); innerCount++)
+						{
+							ArrayList<String> row = new ArrayList<>();
+							row.addAll(tempOutputData.get(count));
+							row.addAll(tableData.get(fromTableNames.get(tableCount)).get(innerCount));
+							if(isDistinctFound == 1 &&   mapForDistinct.get(row) == null)
+							{
+								tempData.add(row);
+								mapForDistinct.put(row, new Boolean(true));
+							}
+							else if(isDistinctFound == 0)
+							{
+								tempData.add(row);
+							}
+								
+						}
+					} // for
+					
+					
+					
+					tempOutputData.clear();
+					tempOutputData.addAll(tempData);
+					
+					
+				} // for
+				
+				outputData.addAll(tempOutputData);
+				
+	
+				
 				
 			} //if
 			else
@@ -650,6 +813,54 @@ public class QueryExecuterImplementation implements QueryExecutionInterface
 				// handles special case
 				if(fromTableNames.size() > 2)
 				{
+					ArrayList<ArrayList<String>> tempOutputData = new ArrayList<>();
+					for(int count = 0; count < tableData.get(fromTableNames.get(0)).size(); count++)
+					{
+						for(int innerCount = 0; innerCount < tableData.get(fromTableNames.get(1)).size(); innerCount++)
+						{
+							ArrayList<String> row = new ArrayList<>();
+							row.addAll(tableData.get(fromTableNames.get(0)).get(count));
+							row.addAll(tableData.get(fromTableNames.get(1)).get(innerCount));
+							
+								tempOutputData.add(row);
+							
+								
+						}
+					} // for
+					
+					
+					for(int tableCount = 2; tableCount < fromTableNames.size(); tableCount++)
+					{
+						
+						ArrayList<ArrayList<String>> tempData = new ArrayList<>();
+						
+						
+						for(int count = 0; count < tempOutputData.size(); count++)
+						{
+							for(int innerCount = 0; innerCount < tableData.get(fromTableNames.get(tableCount)).size(); innerCount++)
+							{
+								ArrayList<String> row = new ArrayList<>();
+								row.addAll(tempOutputData.get(count));
+								row.addAll(tableData.get(fromTableNames.get(tableCount)).get(innerCount));
+								
+									tempData.add(row);
+								
+									
+							}
+						} // for
+						
+						
+						
+						tempOutputData.clear();
+						tempOutputData.addAll(tempData);
+						
+						
+					} // for
+					
+					outputData.addAll(tempOutputData);
+					
+					
+					
 					
 				} //if
 				else
@@ -788,6 +999,53 @@ public class QueryExecuterImplementation implements QueryExecutionInterface
 				// handles special case
 				if(fromTableNames.size() > 2)
 				{
+					
+					ArrayList<ArrayList<String>> tempOutputData = new ArrayList<>();
+					for(int count = 0; count < tableData.get(fromTableNames.get(0)).size(); count++)
+					{
+						for(int innerCount = 0; innerCount < tableData.get(fromTableNames.get(1)).size(); innerCount++)
+						{
+							ArrayList<String> row = new ArrayList<>();
+							row.addAll(tableData.get(fromTableNames.get(0)).get(count));
+							row.addAll(tableData.get(fromTableNames.get(1)).get(innerCount));
+							
+								tempOutputData.add(row);
+							
+								
+						}
+					} // for
+					
+					
+					for(int tableCount = 2; tableCount < fromTableNames.size(); tableCount++)
+					{
+						
+						ArrayList<ArrayList<String>> tempData = new ArrayList<>();
+						
+						
+						for(int count = 0; count < tempOutputData.size(); count++)
+						{
+							for(int innerCount = 0; innerCount < tableData.get(fromTableNames.get(tableCount)).size(); innerCount++)
+							{
+								ArrayList<String> row = new ArrayList<>();
+								row.addAll(tempOutputData.get(count));
+								row.addAll(tableData.get(fromTableNames.get(tableCount)).get(innerCount));
+								
+									tempData.add(row);
+								
+									
+							}
+						} // for
+						
+						
+						
+						tempOutputData.clear();
+						tempOutputData.addAll(tempData);
+						
+						
+					} // for
+					
+					outputData.addAll(tempOutputData);
+					
 					
 				} //if
 				else
@@ -929,6 +1187,51 @@ public class QueryExecuterImplementation implements QueryExecutionInterface
 				// handles special case
 				if(fromTableNames.size() > 2)
 				{
+					ArrayList<ArrayList<String>> tempOutputData = new ArrayList<>();
+					for(int count = 0; count < tableData.get(fromTableNames.get(0)).size(); count++)
+					{
+						for(int innerCount = 0; innerCount < tableData.get(fromTableNames.get(1)).size(); innerCount++)
+						{
+							ArrayList<String> row = new ArrayList<>();
+							row.addAll(tableData.get(fromTableNames.get(0)).get(count));
+							row.addAll(tableData.get(fromTableNames.get(1)).get(innerCount));
+							
+								tempOutputData.add(row);
+							
+								
+						}
+					} // for
+					
+					
+					for(int tableCount = 2; tableCount < fromTableNames.size(); tableCount++)
+					{
+						
+						ArrayList<ArrayList<String>> tempData = new ArrayList<>();
+						
+						
+						for(int count = 0; count < tempOutputData.size(); count++)
+						{
+							for(int innerCount = 0; innerCount < tableData.get(fromTableNames.get(tableCount)).size(); innerCount++)
+							{
+								ArrayList<String> row = new ArrayList<>();
+								row.addAll(tempOutputData.get(count));
+								row.addAll(tableData.get(fromTableNames.get(tableCount)).get(innerCount));
+								
+									tempData.add(row);
+								
+									
+							}
+						} // for
+						
+						
+						
+						tempOutputData.clear();
+						tempOutputData.addAll(tempData);
+						
+						
+					} // for
+					
+					outputData.addAll(tempOutputData);
 					
 				} //if
 				else
@@ -1069,6 +1372,52 @@ public class QueryExecuterImplementation implements QueryExecutionInterface
 				// handles special case
 				if(fromTableNames.size() > 2)
 				{
+					ArrayList<ArrayList<String>> tempOutputData = new ArrayList<>();
+					for(int count = 0; count < tableData.get(fromTableNames.get(0)).size(); count++)
+					{
+						for(int innerCount = 0; innerCount < tableData.get(fromTableNames.get(1)).size(); innerCount++)
+						{
+							ArrayList<String> row = new ArrayList<>();
+							row.addAll(tableData.get(fromTableNames.get(0)).get(count));
+							row.addAll(tableData.get(fromTableNames.get(1)).get(innerCount));
+							
+								tempOutputData.add(row);
+							
+								
+						}
+					} // for
+					
+					
+					for(int tableCount = 2; tableCount < fromTableNames.size(); tableCount++)
+					{
+						
+						ArrayList<ArrayList<String>> tempData = new ArrayList<>();
+						
+						
+						for(int count = 0; count < tempOutputData.size(); count++)
+						{
+							for(int innerCount = 0; innerCount < tableData.get(fromTableNames.get(tableCount)).size(); innerCount++)
+							{
+								ArrayList<String> row = new ArrayList<>();
+								row.addAll(tempOutputData.get(count));
+								row.addAll(tableData.get(fromTableNames.get(tableCount)).get(innerCount));
+								
+									tempData.add(row);
+								
+									
+							}
+						} // for
+						
+						
+						
+						tempOutputData.clear();
+						tempOutputData.addAll(tempData);
+						
+						
+					} // for
+					
+					outputData.addAll(tempOutputData);
+					
 					
 				} //if
 				else
@@ -1177,6 +1526,52 @@ public class QueryExecuterImplementation implements QueryExecutionInterface
 			// handles special case
 			if(fromTableNames.size() > 2)
 			{
+				ArrayList<ArrayList<String>> tempOutputData = new ArrayList<>();
+				for(int count = 0; count < tableData.get(fromTableNames.get(0)).size(); count++)
+				{
+					for(int innerCount = 0; innerCount < tableData.get(fromTableNames.get(1)).size(); innerCount++)
+					{
+						ArrayList<String> row = new ArrayList<>();
+						row.addAll(tableData.get(fromTableNames.get(0)).get(count));
+						row.addAll(tableData.get(fromTableNames.get(1)).get(innerCount));
+						
+							tempOutputData.add(row);
+						
+						
+					}
+				} // for
+				
+				
+				for(int tableCount = 2; tableCount < fromTableNames.size(); tableCount++)
+				{
+					
+					ArrayList<ArrayList<String>> tempData = new ArrayList<>();
+					
+					
+					for(int count = 0; count < tempOutputData.size(); count++)
+					{
+						for(int innerCount = 0; innerCount < tableData.get(fromTableNames.get(tableCount)).size(); innerCount++)
+						{
+							ArrayList<String> row = new ArrayList<>();
+							row.addAll(tempOutputData.get(count));
+							row.addAll(tableData.get(fromTableNames.get(tableCount)).get(innerCount));
+							
+								tempData.add(row);
+							
+								
+						}
+					} // for
+					
+					
+					
+					tempOutputData.clear();
+					tempOutputData.addAll(tempData);
+					
+					
+				} // for
+				
+				outputData.addAll(tempOutputData);
+				
 				
 			} //if
 			else
