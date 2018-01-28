@@ -79,7 +79,10 @@ public class QueryEngine {
 			}
 			else
 			{
+				System.out.println("where clause detected");
 				System.out.println(statement.getWhereClause().toString());
+				queryExecuterImplementation.handleWhereClause(fromTableNames, selectColumnsNames, tableData, tableNameToColumns, isDistinctFound, statement.getWhereClause().toString());
+				
 			}
 			
 			System.out.println(sqlParserImplementation.getTableCount(statement));
