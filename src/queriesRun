@@ -47,6 +47,8 @@ select  A, B, C, D from table1, table2 where table1.B = table2.B
 select  * from table1 where A = 922 AND B = 158 OR C=5727
 select  * from table1 where A = 922 AND B = 158 OR C=5058
 select  A, B, C from table1 where A = 922 AND B = 158 OR C=5058
+select  * from table1 where A = 922 OR B = 158 AND C = 5058
+select A, B, C from table1 where A = 922 OR B = 158 AND C = 5058
 
 
 

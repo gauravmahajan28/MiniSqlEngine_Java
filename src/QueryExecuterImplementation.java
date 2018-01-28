@@ -2394,17 +2394,414 @@ public class QueryExecuterImplementation implements QueryExecutionInterface
 				{
 					test.add(tempOutputData.get(i));
 				}
-				
-				
-				
+								
 				outputData = new ArrayList<>(test);
-				
 
 				
 			}
 			// OR before AND
 			else
 			{
+				String operationOne = "";
+				String operatorOne = "";
+				String operationTwo = "";
+				String operatorTwo = "";
+				String operationThree = "";
+				String operatorThree = "";
+				
+				String []stringTokenizer = whereClause.split("where");
+				String temp = stringTokenizer[1];
+				String[] stringTokenizerWhere = temp.split("OR");
+				
+				String temp1 = stringTokenizerWhere[0];
+				String temp2 = stringTokenizerWhere[1];
+			
+				String []orClauses = temp2.split("AND"); 	
+				
+				String whereClauseOne = temp1;
+				String whereClauseSecond = orClauses[0];
+				String whereClauseThird = orClauses[1];
+				
+			
+				
+				if(whereClauseOne.contains("=") && !whereClauseOne.contains("<=") &&  !whereClauseOne.contains(">=") &&  !whereClauseOne.contains("!="))
+				{
+					operationOne = "EQUAL";
+					operatorOne = "=";
+				}
+				else if(whereClauseOne.contains("<") && !whereClauseOne.contains("<="))
+				{
+					operationOne = "LESS";
+					operatorOne = "<";
+				}
+				else if(whereClauseOne.contains("<="))
+				{
+					operationOne = "LESSEQUAL";
+					operatorOne = "<=";
+				}
+				else if(whereClauseOne.contains(">") && !whereClauseOne.contains(">="))
+				{
+					operationOne = "GREATER";
+					operatorOne = ">";
+				}
+				else if(whereClauseOne.contains(">="))
+				{
+					operationOne = "GREATEREQUAL";
+					operatorOne = ">=";
+				}
+				else if(whereClauseOne.contains(" != "))
+				{
+					operationOne = "NOTEQUAL";
+					operatorOne = "!=";
+				}
+				
+				if(operationOne == "")
+				{
+					throw new Exception("opeartor not supported !");
+				}
+				
+				
+				
+				StringTokenizer stringTokenizer2 = new StringTokenizer(whereClauseOne, operatorOne);
+				
+				String columnNameOne = stringTokenizer2.nextToken();
+				columnNameOne = columnNameOne.replaceAll("\\s+","");
+				String valueOne = stringTokenizer2.nextToken();
+				valueOne = valueOne.replaceAll("\\s+","");
+				
+				int columnIndexOne = -1;
+				for(int count = 0; count < outputData.get(0).size(); count++)
+				{
+					if(outputData.get(0).get(count).contains("."+columnNameOne))
+					{
+						columnIndexOne = count;
+						break;
+					}
+				}
+				if(columnIndexOne == -1)
+				{
+					throw new Exception("column not found !");
+				}
+				
+				for(int count = 1; count < tempOutputData.size(); count++)
+				{
+					
+					switch(operationOne)
+					{
+						case "EQUAL":
+						if(!tempOutputData.get(count).get(columnIndexOne).equals(valueOne))
+						{
+							tempOutputData.remove(count);
+							count--;
+						}
+						break;
+						
+						case "LESS":
+							if(Integer.parseInt(tempOutputData.get(count).get(columnIndexOne)) >= Integer.parseInt(valueOne))
+							{
+								tempOutputData.remove(count);
+								count--;
+							}
+							break;
+							
+							
+						case "LESSEQUAL":
+							if(Integer.parseInt(tempOutputData.get(count).get(columnIndexOne)) > Integer.parseInt(valueOne))
+							{
+								tempOutputData.remove(count);
+								count--;
+							}
+							break;
+							
+						case "GREATER":
+							if(Integer.parseInt(tempOutputData.get(count).get(columnIndexOne)) <= Integer.parseInt(valueOne))
+							{
+								tempOutputData.remove(count);
+								count--;
+							}
+							break;
+							
+							
+						case "GREATEREQUAL":
+							if(Integer.parseInt(tempOutputData.get(count).get(columnIndexOne)) < Integer.parseInt(valueOne))
+							{
+								tempOutputData.remove(count);
+								count--;
+							}
+							break;
+							
+							
+						case "NOTEQUAL":
+							if(tempOutputData.get(count).get(columnIndexOne).equals(valueOne))
+							{
+								tempOutputData.remove(count);
+								count--;
+							}
+							break;
+						
+					}
+					
+				} // for
+				
+				
+				if(whereClauseSecond.contains("=") && !whereClauseSecond.contains("<=") &&  !whereClauseSecond.contains(">=") &&  !whereClauseSecond.contains("!="))
+				{
+					operationTwo = "EQUAL";
+					operatorTwo = "=";
+				}
+				else if(whereClauseSecond.contains("<") && !whereClauseSecond.contains("<="))
+				{
+					operationTwo = "LESS";
+					operatorTwo = "<";
+				}
+				else if(whereClauseSecond.contains("<="))
+				{
+					operationTwo = "LESSEQUAL";
+					operatorTwo = "<=";
+				}
+				else if(whereClauseSecond.contains(">") && !whereClauseSecond.contains(">="))
+				{
+					operationTwo = "GREATER";
+					operatorTwo = ">";
+				}
+				else if(whereClauseSecond.contains(">="))
+				{
+					operationTwo = "GREATEREQUAL";
+					operatorTwo = ">=";
+				}
+				else if(whereClauseSecond.contains(" != "))
+				{
+					operationTwo = "NOTEQUAL";
+					operatorTwo = "!=";
+				}
+				
+				if(operationTwo == "")
+				{
+					throw new Exception("opeartor not supported !");
+				}
+				
+				
+				
+				StringTokenizer stringTokenizer3 = new StringTokenizer(whereClauseSecond, operatorTwo);
+				
+				String columnNameTwo = stringTokenizer3.nextToken();
+				columnNameTwo = columnNameTwo.replaceAll("\\s+","");
+				String valueTwo = stringTokenizer3.nextToken();
+				valueTwo = valueTwo.replaceAll("\\s+","");
+				
+				
+				
+				int columnIndexTwo = -1;
+				for(int count = 0; count < outputData.get(0).size(); count++)
+				{
+					if(outputData.get(0).get(count).contains("."+columnNameTwo))
+					{
+						columnIndexTwo = count;
+						break;
+					}
+				}
+				if(columnIndexTwo == -1)
+				{
+					throw new Exception("column not found !");
+				}
+				
+				
+				
+				
+				
+				for(int count = 1; count < outputData.size(); count++)
+				{
+					
+					switch(operationTwo)
+					{
+						case "EQUAL":
+						if(!outputData.get(count).get(columnIndexTwo).equals(valueTwo))
+						{
+							outputData.remove(count);
+							count--;
+						}
+						break;
+						
+						case "LESS":
+							if(Integer.parseInt(outputData.get(count).get(columnIndexTwo)) >= Integer.parseInt(valueTwo))
+							{
+								outputData.remove(count);
+								count--;
+							}
+							break;
+							
+							
+						case "LESSEQUAL":
+							if(Integer.parseInt(outputData.get(count).get(columnIndexTwo)) > Integer.parseInt(valueTwo))
+							{
+								outputData.remove(count);
+								count--;
+							}
+							break;
+							
+						case "GREATER":
+							if(Integer.parseInt(outputData.get(count).get(columnIndexTwo)) <= Integer.parseInt(valueTwo))
+							{
+								outputData.remove(count);
+								count--;
+							}
+							break;
+							
+							
+						case "GREATEREQUAL":
+							if(Integer.parseInt(outputData.get(count).get(columnIndexTwo)) < Integer.parseInt(valueTwo))
+							{
+								outputData.remove(count);
+								count--;
+							}
+							break;
+							
+							
+						case "NOTEQUAL":
+							if(outputData.get(count).get(columnIndexTwo).equals(valueTwo))
+							{
+								outputData.remove(count);
+								count--;
+							}
+							break;
+						
+					}
+					
+				} // for
+				
+				if(whereClauseThird.contains("=") && !whereClauseThird.contains("<=") &&  !whereClauseThird.contains(">=") &&  !whereClauseThird.contains("!="))
+				{
+					operationThree = "EQUAL";
+					operatorThree = "=";
+				}
+				else if(whereClauseThird.contains("<") && !whereClauseThird.contains("<="))
+				{
+					operationThree = "LESS";
+					operatorThree = "<";
+				}
+				else if(whereClauseThird.contains("<="))
+				{
+					operationThree = "LESSEQUAL";
+					operatorThree = "<=";
+				}
+				else if(whereClauseThird.contains(">") && !whereClauseThird.contains(">="))
+				{
+					operationThree = "GREATER";
+					operatorThree = ">";
+				}
+				else if(whereClauseThird.contains(">="))
+				{
+					operationThree = "GREATEREQUAL";
+					operatorThree = ">=";
+				}
+				else if(whereClauseThird.contains(" != "))
+				{
+					operationThree = "NOTEQUAL";
+					operatorThree = "!=";
+				}
+				
+				if(operationThree == "")
+				{
+					throw new Exception("opeartor not supported !");
+				}
+				
+				StringTokenizer stringTokenizer4 = new StringTokenizer(whereClauseThird, operatorThree);
+				
+				String columnNameThree = stringTokenizer4.nextToken();
+				columnNameThree = columnNameThree.replaceAll("\\s+","");
+				String valueThree = stringTokenizer4.nextToken();
+				valueThree = valueThree.replaceAll("\\s+","");
+				
+				int columnIndexThree = -1;
+				for(int count = 0; count < outputData.get(0).size(); count++)
+				{
+					if(outputData.get(0).get(count).contains("."+columnNameThree))
+					{
+						columnIndexThree = count;
+						break;
+					}
+				}
+				if(columnIndexThree == -1)
+				{
+					throw new Exception("column not found !");
+				}
+				
+				for(int count = 1; count < outputData.size(); count++)
+				{
+					
+					switch(operationThree)
+					{
+						case "EQUAL":
+						if(!outputData.get(count).get(columnIndexThree).equals(valueThree))
+						{
+							outputData.remove(count);
+							count--;
+						}
+						break;
+						
+						case "LESS":
+							if(Integer.parseInt(outputData.get(count).get(columnIndexThree)) >= Integer.parseInt(valueThree))
+							{
+								outputData.remove(count);
+								count--;
+							}
+							break;
+							
+							
+						case "LESSEQUAL":
+							if(Integer.parseInt(outputData.get(count).get(columnIndexThree)) > Integer.parseInt(valueThree))
+							{
+								outputData.remove(count);
+								count--;
+							}
+							break;
+							
+						case "GREATER":
+							if(Integer.parseInt(outputData.get(count).get(columnIndexThree)) <= Integer.parseInt(valueThree))
+							{
+								outputData.remove(count);
+								count--;
+							}
+							break;
+							
+							
+						case "GREATEREQUAL":
+							if(Integer.parseInt(outputData.get(count).get(columnIndexThree)) < Integer.parseInt(valueThree))
+							{
+								outputData.remove(count);
+								count--;
+							}
+							break;
+							
+							
+						case "NOTEQUAL":
+							if(outputData.get(count).get(columnIndexThree).equals(valueThree))
+							{
+								outputData.remove(count);
+								count--;
+							}
+							break;
+						
+					}
+					
+				} // for
+				
+			
+				Set<ArrayList<String>> test = new LinkedHashSet<>();
+				
+				test.add(outputData.get(0));
+				
+				for(int i= 1; i < outputData.size(); i++)
+				{
+					test.add(outputData.get(i));
+				}
+				for(int i= 1; i < tempOutputData.size(); i++)
+				{
+					test.add(tempOutputData.get(i));
+				}
+								
+				outputData = new ArrayList<>(test);
+
 				
 			}
 			
