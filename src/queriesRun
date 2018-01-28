@@ -51,7 +51,7 @@ select  * from table1 where A = 922 OR B = 158 AND C = 5058
 select A, B, C from table1 where A = 922 OR B = 158 AND C = 5058
 
 
-
+// add count feature 
 
 
 
