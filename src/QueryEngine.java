@@ -22,12 +22,17 @@ public class QueryEngine {
 			
 			MetadataReaderImplementation metadataReaderImplementation = new MetadataReaderImplementation();
 			metadataReaderImplementation.initMapVariables();
-			metadataReaderImplementation.readMetadata("resources/metadata.txt");
+			metadataReaderImplementation.readMetadata("src/metadata.txt");
 			Map<String, ArrayList<String>> tableNameToColumns = metadataReaderImplementation.getTableNameToColumns();
 			SqlParserImplementation sqlParserImplementation = new SqlParserImplementation();
 			TGSqlParser sqlParser = sqlParserImplementation.getSqlParser();
 			sqlParserImplementation.attachQueryToParser(sqlParser, args[0]);
 			TSelectSqlStatement statement = sqlParserImplementation.getParsedStatement(sqlParser);
+			
+			if(statement == null)
+			{
+				throw new Exception("could not parse query");
+			}
 			
 			FileOperationsImplementation fileOperationsImplementation = new FileOperationsImplementation();
 			QueryExecuterImplementation queryExecuterImplementation = new QueryExecuterImplementation();

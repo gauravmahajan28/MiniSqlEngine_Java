@@ -11,6 +11,11 @@ D
 <end_table>
 <begin_table>
 table3
-E
-F
+G
+H
+<end_table>
+<begin_table>
+table4
+I
+J
 <end_table>

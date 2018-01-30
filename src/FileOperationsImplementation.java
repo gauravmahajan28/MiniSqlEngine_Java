@@ -12,7 +12,7 @@ public class FileOperationsImplementation implements FileOperations {
 	{
 		ArrayList<ArrayList<String>> tableData = new ArrayList<>();
 		
-		File csvFile = new File("resources/" + tableName + ".csv");
+		File csvFile = new File("src/"+tableName + ".csv");
 		
 		BufferedReader br = new BufferedReader(new FileReader(csvFile));
 		
@@ -23,7 +23,12 @@ public class FileOperationsImplementation implements FileOperations {
 			StringTokenizer stringTokenizer = new StringTokenizer(line, ",");
 			while(stringTokenizer.hasMoreTokens())
 			{
-				row.add(stringTokenizer.nextToken());
+				String token = stringTokenizer.nextToken();
+				if(token.contains("\""))
+				{
+					token = token.substring(1, token.length()-1);
+				}
+				row.add(token);
 			}
 			tableData.add(row);
 		}

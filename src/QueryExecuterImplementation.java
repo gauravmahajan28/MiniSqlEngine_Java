@@ -90,17 +90,13 @@ public class QueryExecuterImplementation implements QueryExecutionInterface
 						}
 					} // for
 					
-					
-					
 					tempOutputData.clear();
 					tempOutputData.addAll(tempData);
-					
 					
 				} // for
 				
 				outputData.addAll(tempOutputData);
 				
-	
 				
 			} //if
 			else
@@ -153,7 +149,7 @@ public class QueryExecuterImplementation implements QueryExecutionInterface
 		} // if select *
 		
 		// max
-		else if(selectColumnsNames.size() == 1 && selectColumnsNames.get(0).contains("max("))
+		else if(selectColumnsNames.size() == 1 && selectColumnsNames.get(0).toLowerCase().contains("max("))
 		{
 			ArrayList<String> headers = new ArrayList<>();
 			
@@ -170,6 +166,11 @@ public class QueryExecuterImplementation implements QueryExecutionInterface
 			//outputData.add(headers);
 			
 			String columnName = selectColumnsNames.get(0).substring(4);
+			if(columnName.contains("."))
+			{
+				columnName = columnName.substring(columnName.indexOf(".")+1);
+			}
+			
 			columnName = columnName.replace(")", "");
 			if(columnName.contains(","))
 			{
@@ -189,7 +190,7 @@ public class QueryExecuterImplementation implements QueryExecutionInterface
 				
 				int index = headers.indexOf(fromTableNames.get(0)+"." + columnName);
 				ArrayList<String> header = new ArrayList<>();
-				header.add(fromTableNames.get(0)+"." + columnName);
+				header.add("max("+fromTableNames.get(0)+"." + columnName+")");
 				outputData.add(header);
 				
 				int max = Integer.MIN_VALUE;
@@ -211,7 +212,7 @@ public class QueryExecuterImplementation implements QueryExecutionInterface
 			
 		}
 		//sum
-		else if(selectColumnsNames.size() == 1 && selectColumnsNames.get(0).contains("sum("))
+		else if(selectColumnsNames.size() == 1 && selectColumnsNames.get(0).toLowerCase().contains("sum("))
 		{
 			ArrayList<String> headers = new ArrayList<>();
 			
@@ -228,6 +229,12 @@ public class QueryExecuterImplementation implements QueryExecutionInterface
 			//outputData.add(headers);
 			
 			String columnName = selectColumnsNames.get(0).substring(4);
+			
+			if(columnName.contains("."))
+			{
+				columnName = columnName.substring(columnName.indexOf(".")+1);
+			}
+			
 			columnName = columnName.replace(")", "");
 			if(columnName.contains(","))
 			{
@@ -247,7 +254,7 @@ public class QueryExecuterImplementation implements QueryExecutionInterface
 				
 				int index = headers.indexOf(fromTableNames.get(0)+"." + columnName);
 				ArrayList<String> header = new ArrayList<>();
-				header.add(fromTableNames.get(0)+"." + columnName);
+				header.add("sum("+fromTableNames.get(0)+"." + columnName+")");
 				outputData.add(header);
 				
 				int sum = 0;
@@ -266,7 +273,7 @@ public class QueryExecuterImplementation implements QueryExecutionInterface
 				
 		}
 		//avg
-		else if(selectColumnsNames.size() == 1 && selectColumnsNames.get(0).contains("avg("))
+		else if(selectColumnsNames.size() == 1 && selectColumnsNames.get(0).toLowerCase().contains("avg("))
 		{
 		
 			ArrayList<String> headers = new ArrayList<>();
@@ -284,6 +291,13 @@ public class QueryExecuterImplementation implements QueryExecutionInterface
 			//outputData.add(headers);
 			
 			String columnName = selectColumnsNames.get(0).substring(4);
+			
+			if(columnName.contains("."))
+			{
+				columnName = columnName.substring(columnName.indexOf(".")+1);
+			}
+			
+			
 			columnName = columnName.replace(")", "");
 			if(columnName.contains(","))
 			{
@@ -303,7 +317,7 @@ public class QueryExecuterImplementation implements QueryExecutionInterface
 				
 				int index = headers.indexOf(fromTableNames.get(0)+"." + columnName);
 				ArrayList<String> header = new ArrayList<>();
-				header.add(fromTableNames.get(0)+"." + columnName);
+				header.add("avg("+fromTableNames.get(0)+"." + columnName+")");
 				outputData.add(header);
 				
 				int avg = 0;
@@ -315,9 +329,9 @@ public class QueryExecuterImplementation implements QueryExecutionInterface
 					rowCount++;
 						
 				}
-				float average = (float)avg / rowCount;
+				float average = ((float)avg / rowCount);
 				ArrayList<String> maxData = new ArrayList<>();
-				maxData.add(String.valueOf(average));
+				maxData.add(String.format("%.2f", average));
 				outputData.add(maxData);
 				displayResults(outputData);
 			}
@@ -325,7 +339,7 @@ public class QueryExecuterImplementation implements QueryExecutionInterface
 			
 		}
 		// min
-		else if(selectColumnsNames.size() == 1 && selectColumnsNames.get(0).contains("min("))
+		else if(selectColumnsNames.size() == 1 && selectColumnsNames.get(0).toLowerCase().contains("min("))
 		{
 			
 			ArrayList<String> headers = new ArrayList<>();
@@ -343,6 +357,10 @@ public class QueryExecuterImplementation implements QueryExecutionInterface
 			//outputData.add(headers);
 			
 			String columnName = selectColumnsNames.get(0).substring(4);
+			if(columnName.contains("."))
+			{
+				columnName = columnName.substring(columnName.indexOf(".")+1);
+			}
 			columnName = columnName.replace(")", "");
 			if(columnName.contains(","))
 			{
@@ -359,10 +377,9 @@ public class QueryExecuterImplementation implements QueryExecutionInterface
 			else
 			{
 				
-				
 				int index = headers.indexOf(fromTableNames.get(0)+"." + columnName);
 				ArrayList<String> header = new ArrayList<>();
-				header.add(fromTableNames.get(0)+"." + columnName);
+				header.add("min("+fromTableNames.get(0)+"." + columnName+")");
 				outputData.add(header);
 				
 				int min = Integer.MAX_VALUE;
@@ -388,27 +405,56 @@ public class QueryExecuterImplementation implements QueryExecutionInterface
 		/**
 		 * handle from here
 		 */
-		
 		else // select one or more columns
 		{
 			ArrayList<String> headers = new ArrayList<>();
 			Map<String, ArrayList<Integer>> tableNameTocolumnIndicesRequired = new HashMap<>();
 			// adding headers
-			for(int count = 0; count < fromTableNames.size(); count++)
+			/*
+			 * 
+			 * only supported formats are select table.col, table2.col2  / sleect col1,col2
+			 */
+			
+			
+			
+			// if select fields  does not contain tableName.columnName
+			if(!selectColumnsNames.get(0).contains("."))
 			{
-				ArrayList<Integer> columnIndices = new ArrayList<>();
-				
-				for(int name = 0; name < tableNameToColumns.get(fromTableNames.get(count)).size(); name ++)
+			
+				for(int count = 0; count < fromTableNames.size(); count++)
 				{
-					if(selectColumnsNames.contains(tableNameToColumns.get(fromTableNames.get(count)).get(name)))
+					ArrayList<Integer> columnIndices = new ArrayList<>();
+					
+					for(int name = 0; name < tableNameToColumns.get(fromTableNames.get(count)).size(); name ++)
 					{
-						columnIndices.add(name);
-						headers.add(fromTableNames.get(count) + "." + tableNameToColumns.get(fromTableNames.get(count)).get(name));
-						
+						if(selectColumnsNames.contains(tableNameToColumns.get(fromTableNames.get(count)).get(name)))
+						{
+							columnIndices.add(name);
+							headers.add(fromTableNames.get(count) + "." + tableNameToColumns.get(fromTableNames.get(count)).get(name));	
+						}
 					}
+					tableNameTocolumnIndicesRequired.put(fromTableNames.get(count), columnIndices);
 				}
-				tableNameTocolumnIndicesRequired.put(fromTableNames.get(count), columnIndices);
 			}
+			else
+			{
+				for(int count = 0; count < fromTableNames.size(); count++)
+				{
+					ArrayList<Integer> columnIndices = new ArrayList<>();
+					
+					for(int name = 0; name < tableNameToColumns.get(fromTableNames.get(count)).size(); name ++)
+					{
+						if(selectColumnsNames.contains(fromTableNames.get(count)+"."+tableNameToColumns.get(fromTableNames.get(count)).get(name)))
+						{
+							columnIndices.add(name);
+							headers.add(fromTableNames.get(count) + "." + tableNameToColumns.get(fromTableNames.get(count)).get(name));	
+						}
+					}
+					tableNameTocolumnIndicesRequired.put(fromTableNames.get(count), columnIndices);
+				}
+			}
+			
+			
 			if(headers.size() == 0 || headers.size() != selectColumnsNames.size())
 			{
 				throw new Exception("column not found");
@@ -580,17 +626,6 @@ public class QueryExecuterImplementation implements QueryExecutionInterface
 	}
 	
 	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-
-
 
 	public void handleSelectStar(ArrayList<String> fromTableNames,
 			ArrayList<String> selectColumnsNames,
@@ -749,7 +784,7 @@ public class QueryExecuterImplementation implements QueryExecutionInterface
 		
 		// max
 		// select max(D) with where condition
-		else if(selectColumnsNames.size() == 1 && selectColumnsNames.get(0).contains("max("))
+		else if(selectColumnsNames.size() == 1 && selectColumnsNames.get(0).toLowerCase().contains("max("))
 		{
 			ArrayList<String> headers = new ArrayList<>();
 			
@@ -765,6 +800,12 @@ public class QueryExecuterImplementation implements QueryExecutionInterface
 			//outputData.add(headers);
 			
 			String columnName = selectColumnsNames.get(0).substring(4);
+			if(columnName.contains("."))
+			{
+				columnName = columnName.substring(columnName.indexOf(".")+1);
+			}
+			
+			
 			columnName = columnName.replace(")", "");
 			if(columnName.contains(","))
 			{
@@ -929,12 +970,14 @@ public class QueryExecuterImplementation implements QueryExecutionInterface
 				ArrayList<String> maxData = new ArrayList<>();
 				maxData.add(String.valueOf(max));
 				outputData.add(maxData);
+				header.set(0, "max("+header.get(0)+")");
+				outputData.set(0, header);
 				displayResults(outputData);
 			}
 			
 		}
 		//avg
-		else if(selectColumnsNames.size() == 1 && selectColumnsNames.get(0).contains("avg("))
+		else if(selectColumnsNames.size() == 1 && selectColumnsNames.get(0).toLowerCase().contains("avg("))
 		{
 		
 			ArrayList<String> headers = new ArrayList<>();
@@ -951,6 +994,12 @@ public class QueryExecuterImplementation implements QueryExecutionInterface
 			//outputData.add(headers);
 			
 			String columnName = selectColumnsNames.get(0).substring(4);
+			if(columnName.contains("."))
+			{
+				columnName = columnName.substring(columnName.indexOf(".")+1);
+			}
+			
+			
 			columnName = columnName.replace(")", "");
 			if(columnName.contains(","))
 			{
@@ -1036,8 +1085,6 @@ public class QueryExecuterImplementation implements QueryExecutionInterface
 							}
 						} // for
 						
-						
-						
 						tempOutputData.clear();
 						tempOutputData.addAll(tempData);
 						
@@ -1116,6 +1163,8 @@ public class QueryExecuterImplementation implements QueryExecutionInterface
 				ArrayList<String> maxData = new ArrayList<>();
 				maxData.add(String.valueOf((float)(sum) / cnt));
 				outputData.add(maxData);
+				header.set(0, "avg("+header.get(0)+")");
+				outputData.set(0, header);
 				displayResults(outputData);
 			}
 			
@@ -1123,7 +1172,7 @@ public class QueryExecuterImplementation implements QueryExecutionInterface
 		}
 		//sum
 		// select sum() with where conditions
-		else if(selectColumnsNames.size() == 1 && selectColumnsNames.get(0).contains("sum("))
+		else if(selectColumnsNames.size() == 1 && selectColumnsNames.get(0).toLowerCase().contains("sum("))
 		{
 			ArrayList<String> headers = new ArrayList<>();
 			
@@ -1139,6 +1188,10 @@ public class QueryExecuterImplementation implements QueryExecutionInterface
 			//outputData.add(headers);
 			
 			String columnName = selectColumnsNames.get(0).substring(4);
+			if(columnName.contains("."))
+			{
+				columnName = columnName.substring(columnName.indexOf(".")+1);
+			}
 			columnName = columnName.replace(")", "");
 			if(columnName.contains(","))
 			{
@@ -1300,6 +1353,8 @@ public class QueryExecuterImplementation implements QueryExecutionInterface
 				ArrayList<String> maxData = new ArrayList<>();
 				maxData.add(String.valueOf(sum));
 				outputData.add(maxData);
+				header.set(0, "sum("+header.get(0)+")");
+				outputData.set(0, header);
 				displayResults(outputData);
 			}
 			
@@ -1307,7 +1362,7 @@ public class QueryExecuterImplementation implements QueryExecutionInterface
 		}
 		// min
 		// select min with where clause
-		else if(selectColumnsNames.size() == 1 && selectColumnsNames.get(0).contains("min("))
+		else if(selectColumnsNames.size() == 1 && selectColumnsNames.get(0).toLowerCase().contains("min("))
 		{
 			
 			ArrayList<String> headers = new ArrayList<>();
@@ -1324,6 +1379,10 @@ public class QueryExecuterImplementation implements QueryExecutionInterface
 			//outputData.add(headers);
 			
 			String columnName = selectColumnsNames.get(0).substring(4);
+			if(columnName.contains("."))
+			{
+				columnName = columnName.substring(columnName.indexOf(".")+1);
+			}
 			columnName = columnName.replace(")", "");
 			if(columnName.contains(","))
 			{
@@ -1486,6 +1545,8 @@ public class QueryExecuterImplementation implements QueryExecutionInterface
 				ArrayList<String> maxData = new ArrayList<>();
 				maxData.add(String.valueOf(min));
 				outputData.add(maxData);
+				header.set(0, "min("+header.get(0)+")");
+				outputData.set(0, header);
 				displayResults(outputData);
 			}
 			
@@ -1501,20 +1562,45 @@ public class QueryExecuterImplementation implements QueryExecutionInterface
 			ArrayList<String> headers = new ArrayList<>();
 			Map<String, ArrayList<Integer>> tableNameTocolumnIndicesRequired = new HashMap<>();
 			// adding headers
-			for(int count = 0; count < fromTableNames.size(); count++)
-			{
-				ArrayList<Integer> columnIndices = new ArrayList<>();
-				
-				for(int name = 0; name < tableNameToColumns.get(fromTableNames.get(count)).size(); name ++)
+			/**
+			 * only supported formats : select table1.col1, table2.col2 / select col1, col2
+			 */
+			
+			if(!selectColumnsNames.get(0).contains("."))
+			{	
+				for(int count = 0; count < fromTableNames.size(); count++)
 				{
-					if(selectColumnsNames.contains(tableNameToColumns.get(fromTableNames.get(count)).get(name)))
+					ArrayList<Integer> columnIndices = new ArrayList<>();
+					
+					for(int name = 0; name < tableNameToColumns.get(fromTableNames.get(count)).size(); name ++)
 					{
-						columnIndices.add(name);
-						headers.add(fromTableNames.get(count) + "." + tableNameToColumns.get(fromTableNames.get(count)).get(name));
-						
+						if(selectColumnsNames.contains(tableNameToColumns.get(fromTableNames.get(count)).get(name)))
+						{
+							columnIndices.add(name);
+							headers.add(fromTableNames.get(count) + "." + tableNameToColumns.get(fromTableNames.get(count)).get(name));
+							
+						}
 					}
+					tableNameTocolumnIndicesRequired.put(fromTableNames.get(count), columnIndices);
 				}
-				tableNameTocolumnIndicesRequired.put(fromTableNames.get(count), columnIndices);
+			}
+			else
+			{
+				for(int count = 0; count < fromTableNames.size(); count++)
+				{
+					ArrayList<Integer> columnIndices = new ArrayList<>();
+					
+					for(int name = 0; name < tableNameToColumns.get(fromTableNames.get(count)).size(); name ++)
+					{
+						if(selectColumnsNames.contains(fromTableNames.get(count) + "." + tableNameToColumns.get(fromTableNames.get(count)).get(name)))
+						{
+							columnIndices.add(name);
+							headers.add(fromTableNames.get(count) + "." + tableNameToColumns.get(fromTableNames.get(count)).get(name));
+							
+						}
+					}
+					tableNameTocolumnIndicesRequired.put(fromTableNames.get(count), columnIndices);
+				}
 			}
 			if(headers.size() == 0)
 			{
@@ -1873,7 +1959,6 @@ public class QueryExecuterImplementation implements QueryExecutionInterface
 							count--;
 						}
 						break;
-						
 						
 					case "LESSEQUAL":
 						if(Integer.parseInt(outputData.get(count).get(columnIndexOne)) > Integer.parseInt(valueOne))
