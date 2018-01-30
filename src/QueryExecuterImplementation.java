@@ -6,6 +6,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
+import com.sun.jndi.url.corbaname.corbanameURLContextFactory;
+
 
 public class QueryExecuterImplementation implements QueryExecutionInterface
 {
@@ -468,14 +470,28 @@ public class QueryExecuterImplementation implements QueryExecutionInterface
 				ArrayList<ArrayList<String>> tempOutputData = new ArrayList<>();
 				for(int count = 0; count < tableData.get(fromTableNames.get(0)).size(); count++)
 				{
+					
+					ArrayList<Integer> indices = tableNameTocolumnIndicesRequired.get(fromTableNames.get(0));
+					ArrayList<String> row = new ArrayList<>();
+					for(int index = 0; index < indices.size(); index++)
+					{
+						row.add(tableData.get(fromTableNames.get(0)).get(count).get(indices.get(index)));
+					}
+					
 					for(int innerCount = 0; innerCount < tableData.get(fromTableNames.get(1)).size(); innerCount++)
 					{
-						ArrayList<String> row = new ArrayList<>();
-						row.addAll(tableData.get(fromTableNames.get(0)).get(count));
-						row.addAll(tableData.get(fromTableNames.get(1)).get(innerCount));
-						tempOutputData.add(row);
 						
-							
+						ArrayList<Integer> innerIndices = tableNameTocolumnIndicesRequired.get(fromTableNames.get(1));
+						ArrayList<String> innerRow = new ArrayList<>();
+						for(int index = 0; index < innerIndices.size(); index++)
+						{
+							innerRow.add(tableData.get(fromTableNames.get(1)).get(innerCount).get(innerIndices.get(index)));
+						}
+						
+						ArrayList<String> nestedRow = new ArrayList<>();
+						nestedRow.addAll(row);
+						nestedRow.addAll(innerRow);
+						tempOutputData.add(nestedRow);								
 					}
 				} // for
 				
@@ -491,8 +507,14 @@ public class QueryExecuterImplementation implements QueryExecutionInterface
 						for(int innerCount = 0; innerCount < tableData.get(fromTableNames.get(tableCount)).size(); innerCount++)
 						{
 							ArrayList<String> row = new ArrayList<>();
+							ArrayList<Integer> innerIndices = tableNameTocolumnIndicesRequired.get(fromTableNames.get(tableCount));
+							ArrayList<String> innerRow = new ArrayList<>();
+							for(int index = 0; index < innerIndices.size(); index++)
+							{
+								innerRow.add(tableData.get(fromTableNames.get(tableCount)).get(innerCount).get(innerIndices.get(index)));
+							}
 							row.addAll(tempOutputData.get(count));
-							row.addAll(tableData.get(fromTableNames.get(tableCount)).get(innerCount));
+							row.addAll(innerRow);
 							tempData.add(row);
 							
 								
@@ -890,8 +912,7 @@ public class QueryExecuterImplementation implements QueryExecutionInterface
 							}
 						} // for
 						
-						
-						
+					
 						tempOutputData.clear();
 						tempOutputData.addAll(tempData);
 						
@@ -1565,158 +1586,189 @@ public class QueryExecuterImplementation implements QueryExecutionInterface
 			/**
 			 * only supported formats : select table1.col1, table2.col2 / select col1, col2
 			 */
-			
-			if(!selectColumnsNames.get(0).contains("."))
-			{	
+
+		
+				// adding headers
 				for(int count = 0; count < fromTableNames.size(); count++)
 				{
-					ArrayList<Integer> columnIndices = new ArrayList<>();
-					
 					for(int name = 0; name < tableNameToColumns.get(fromTableNames.get(count)).size(); name ++)
 					{
-						if(selectColumnsNames.contains(tableNameToColumns.get(fromTableNames.get(count)).get(name)))
-						{
-							columnIndices.add(name);
-							headers.add(fromTableNames.get(count) + "." + tableNameToColumns.get(fromTableNames.get(count)).get(name));
-							
-						}
+						headers.add(fromTableNames.get(count) + "." + tableNameToColumns.get(fromTableNames.get(count)).get(name));
 					}
-					tableNameTocolumnIndicesRequired.put(fromTableNames.get(count), columnIndices);
 				}
-			}
-			else
-			{
-				for(int count = 0; count < fromTableNames.size(); count++)
-				{
-					ArrayList<Integer> columnIndices = new ArrayList<>();
-					
-					for(int name = 0; name < tableNameToColumns.get(fromTableNames.get(count)).size(); name ++)
-					{
-						if(selectColumnsNames.contains(fromTableNames.get(count) + "." + tableNameToColumns.get(fromTableNames.get(count)).get(name)))
-						{
-							columnIndices.add(name);
-							headers.add(fromTableNames.get(count) + "." + tableNameToColumns.get(fromTableNames.get(count)).get(name));
-							
-						}
-					}
-					tableNameTocolumnIndicesRequired.put(fromTableNames.get(count), columnIndices);
-				}
-			}
-			if(headers.size() == 0)
-			{
-				throw new Exception("column not found");
-			}
-			
-			outputData.add(headers);
-			
-			// handles special case
-			if(fromTableNames.size() > 2)
-			{
-				ArrayList<ArrayList<String>> tempOutputData = new ArrayList<>();
-				for(int count = 0; count < tableData.get(fromTableNames.get(0)).size(); count++)
-				{
-					for(int innerCount = 0; innerCount < tableData.get(fromTableNames.get(1)).size(); innerCount++)
-					{
-						ArrayList<String> row = new ArrayList<>();
-						row.addAll(tableData.get(fromTableNames.get(0)).get(count));
-						row.addAll(tableData.get(fromTableNames.get(1)).get(innerCount));
-						
-							tempOutputData.add(row);
-						
-						
-					}
-				} // for
+				outputData.add(headers);
 				
 				
-				for(int tableCount = 2; tableCount < fromTableNames.size(); tableCount++)
+				Map<ArrayList<String>, Boolean> mapForDistinct = new HashMap<>();
+				
+				// handles special case
+				if(fromTableNames.size() > 2)
 				{
-					
-					ArrayList<ArrayList<String>> tempData = new ArrayList<>();
-					
-					
-					for(int count = 0; count < tempOutputData.size(); count++)
+					ArrayList<ArrayList<String>> tempOutputData = new ArrayList<>();
+					for(int count = 0; count < tableData.get(fromTableNames.get(0)).size(); count++)
 					{
-						for(int innerCount = 0; innerCount < tableData.get(fromTableNames.get(tableCount)).size(); innerCount++)
+						for(int innerCount = 0; innerCount < tableData.get(fromTableNames.get(1)).size(); innerCount++)
 						{
 							ArrayList<String> row = new ArrayList<>();
-							row.addAll(tempOutputData.get(count));
-							row.addAll(tableData.get(fromTableNames.get(tableCount)).get(innerCount));
-							
-								tempData.add(row);
-							
+							row.addAll(tableData.get(fromTableNames.get(0)).get(count));
+							row.addAll(tableData.get(fromTableNames.get(1)).get(innerCount));
+							if(isDistinctFound == 1 &&   mapForDistinct.get(row) == null)
+							{
+								tempOutputData.add(row);
+								mapForDistinct.put(row, new Boolean(true));
+							}
+							else if(isDistinctFound == 0)
+							{
+								tempOutputData.add(row);
+							}
 								
 						}
 					} // for
 					
 					
-					
-					tempOutputData.clear();
-					tempOutputData.addAll(tempData);
-					
-					
-				} // for
-				
-				outputData.addAll(tempOutputData);
-				
-				
-			} //if
-			else
-			{
-				// only one table
-				if(fromTableNames.size() == 1)
-				{
-					for(int count = 0; count < tableData.get(fromTableNames.get(0)).size(); count++)
+					for(int tableCount = 2; tableCount < fromTableNames.size(); tableCount++)
 					{
 						
-						ArrayList<Integer> indices = tableNameTocolumnIndicesRequired.get(fromTableNames.get(0));
-						ArrayList<String> row = new ArrayList<>();
+						ArrayList<ArrayList<String>> tempData = new ArrayList<>();
 						
 						
-						for(int index = 0; index < indices.size(); index++)
+						for(int count = 0; count < tempOutputData.size(); count++)
 						{
-							row.add(tableData.get(fromTableNames.get(0)).get(count).get(indices.get(index)));
-						}
-						outputData.add(row);
-					}
-				} //if
-				// two tables
-				else
-				{
-					for(int count = 0; count < tableData.get(fromTableNames.get(0)).size(); count++)
-					{
-						
-						ArrayList<Integer> indices = tableNameTocolumnIndicesRequired.get(fromTableNames.get(0));
-						ArrayList<String> row = new ArrayList<>();
-						for(int index = 0; index < indices.size(); index++)
-						{
-							row.add(tableData.get(fromTableNames.get(0)).get(count).get(indices.get(index)));
-						}
-						
-						for(int innerCount = 0; innerCount < tableData.get(fromTableNames.get(1)).size(); innerCount++)
-						{
-							
-							ArrayList<Integer> innerIndices = tableNameTocolumnIndicesRequired.get(fromTableNames.get(1));
-							ArrayList<String> innerRow = new ArrayList<>();
-							for(int index = 0; index < innerIndices.size(); index++)
+							for(int innerCount = 0; innerCount < tableData.get(fromTableNames.get(tableCount)).size(); innerCount++)
 							{
-								innerRow.add(tableData.get(fromTableNames.get(1)).get(innerCount).get(innerIndices.get(index)));
+								ArrayList<String> row = new ArrayList<>();
+								row.addAll(tempOutputData.get(count));
+								row.addAll(tableData.get(fromTableNames.get(tableCount)).get(innerCount));
+								if(isDistinctFound == 1 &&   mapForDistinct.get(row) == null)
+								{
+									tempData.add(row);
+									mapForDistinct.put(row, new Boolean(true));
+								}
+								else if(isDistinctFound == 0)
+								{
+									tempData.add(row);
+								}
+									
 							}
-							
-							ArrayList<String> nestedRow = new ArrayList<>();
-							nestedRow.addAll(row);
-							nestedRow.addAll(innerRow);
-							outputData.add(nestedRow);								
-						}
+						} // for
+						
+						tempOutputData.clear();
+						tempOutputData.addAll(tempData);
+						
 					} // for
 					
-				} // else
-			}// else
+					outputData.addAll(tempOutputData);
+					
+					
+				} //if size > 2
+				else
+				{
+					// only one table
+					if(fromTableNames.size() == 1)
+					{
+						for(int count = 0; count < tableData.get(fromTableNames.get(0)).size(); count++)
+						{
+							// distinct
+							if(isDistinctFound == 1 && mapForDistinct.get(tableData.get(fromTableNames.get(0)).get(count)) == null)
+							{
+								outputData.add(tableData.get(fromTableNames.get(0)).get(count));
+								mapForDistinct.put(tableData.get(fromTableNames.get(0)).get(count), new Boolean(true));
+								
+							}
+							else if(isDistinctFound == 0)
+							{
+								outputData.add(tableData.get(fromTableNames.get(0)).get(count));
+							}
+							
+						}
+					} //if
+					// two tables
+					else
+					{
+						for(int count = 0; count < tableData.get(fromTableNames.get(0)).size(); count++)
+						{
+							for(int innerCount = 0; innerCount < tableData.get(fromTableNames.get(1)).size(); innerCount++)
+							{
+								ArrayList<String> row = new ArrayList<>();
+								row.addAll(tableData.get(fromTableNames.get(0)).get(count));
+								row.addAll(tableData.get(fromTableNames.get(1)).get(innerCount));
+								if(isDistinctFound == 1 &&   mapForDistinct.get(row) == null)
+								{
+									outputData.add(row);
+									mapForDistinct.put(row, new Boolean(true));
+								}
+								else if(isDistinctFound == 0)
+								{
+									outputData.add(row);
+								}
+									
+							}
+						} // for
+						
+					} // else
+				}// else // else size < 2
+			
 			outputData = filterWhereClause(outputData, whereClause);
+			
+			ArrayList<Integer> indicesRequired = new ArrayList<Integer>();
+			
+			if(!selectColumnsNames.get(0).contains("."))
+			{	
+				for(int count = 0; count < outputData.get(0).size(); count++)
+				{
+						for(int innerCount = 0; innerCount < selectColumnsNames.size(); innerCount++)
+						{
+							if(outputData.get(0).get(count).contains("."+selectColumnsNames.get(innerCount)))
+							{
+								indicesRequired.add(count);
+								break;
+							}
+						}
+				}
+			}
+			else
+			{
+				for(int count = 0; count < outputData.get(0).size(); count++)
+				{
+						for(int innerCount = 0; innerCount < selectColumnsNames.size(); innerCount++)
+						{
+							if(outputData.get(0).get(count).equals(selectColumnsNames.get(innerCount)))
+							{
+								indicesRequired.add(count);
+								break;
+							}
+						}
+				}
+			}
+			if(indicesRequired.size() == 0 || indicesRequired.size() < selectColumnsNames.size())
+			{
+				throw new Exception("column not found");
+			}
+			
+			ArrayList<ArrayList<String>> tempOutputData = new ArrayList<>();
+			
+			for(int count = 0; count < outputData.size(); count++)
+			{
+				ArrayList<String> row = new ArrayList<String>();
+				for(int innerCount = 0; innerCount < indicesRequired.size(); innerCount++)
+				{
+					row.add(outputData.get(count).get(indicesRequired.get(innerCount)));
+				}
+				tempOutputData.add(row);
+			}
+			
+			
+			outputData.clear();
+			outputData = tempOutputData;
+			
 			if(isDistinctFound == 1)
 				displayDistinctResults(outputData);
 			else 
 				displayResults(outputData);
-		}
+		
+			
+		
+		}// else
 		
 		// TODO Auto-generated method stub
 		
@@ -1731,8 +1783,60 @@ public class QueryExecuterImplementation implements QueryExecutionInterface
 		ArrayList<ArrayList<String>> tempOutputData = new ArrayList<>();
 		tempOutputData.addAll(outputData);
 		
+		
+		int numberOfDots = 0;
+		for( int i=0; i<whereClause.length(); i++ ) {
+		    if( whereClause.charAt(i) == '.' ) {
+		    	numberOfDots++;
+		    } 
+		}
+		
+		
+		int isJoinCondition = 0;
+		if((whereClause.contains("AND") || whereClause.contains("OR") ) && !(whereClause.contains("AND") && whereClause.contains("OR")))
+		{
+			String conditions[] = whereClause.split("where");
+			String condition = conditions[1];
+			String []joins;
+			if(condition.contains("AND"))
+			{
+				 joins = condition.split("AND");
+				
+			}
+			else
+			{
+				 joins = condition.split("OR");
+			}
+			int OneDot = 0;
+			for( int i=0; i<joins[0].length(); i++ ) {
+			    if( joins[0].charAt(i) == '.' ) {
+			    	OneDot++;
+			    } 
+			}
+			int TwoDot = 0;
+			for( int i=0; i<joins[1].length(); i++ ) {
+			    if( joins[1].charAt(i) == '.' ) {
+			    	TwoDot++;
+			    } 
+			}
+			
+			if(OneDot == 2 && TwoDot == 2)
+			{
+				isJoinCondition = 1;
+			}
+			
+			
+		}
+		else
+		{
+			
+		}
+		
+		
+		
+		
 		// where clause does not contain AND and OR
-		if(!whereClause.contains("AND") && !whereClause.contains("OR") && !whereClause.contains("."))
+		if(!whereClause.contains("AND") && !whereClause.contains("OR") && (!whereClause.contains(".") || numberOfDots == 1))
 		{
 			String operation = "";
 			String operator = "";
@@ -1772,9 +1876,9 @@ public class QueryExecuterImplementation implements QueryExecutionInterface
 				throw new Exception("opeartor not supported !");
 			}
 			
-			StringTokenizer stringTokenizer = new StringTokenizer(whereClause, "where");
+			String []stringTokenizer = whereClause.split("where");
 			
-			String condition = stringTokenizer.nextToken();
+			String condition = stringTokenizer[1];
 			
 			StringTokenizer stringTokenizer2 = new StringTokenizer(condition, operator);
 			
@@ -1785,11 +1889,23 @@ public class QueryExecuterImplementation implements QueryExecutionInterface
 			int columnIndex = -1;
 			for(int count = 0; count < outputData.get(0).size(); count++)
 			{
-				if(outputData.get(0).get(count).contains("."+columnName))
+				if(columnName.contains("."))
 				{
-					columnIndex = count;
-					break;
+					if(outputData.get(0).get(count).equals(columnName))
+					{
+						columnIndex = count;
+						break;
+					}
 				}
+				else
+				{
+					if(outputData.get(0).get(count).contains("."+columnName))
+					{
+						columnIndex = count;
+						break;
+					}
+				}
+				
 			}
 			if(columnIndex == -1)
 			{
@@ -1859,15 +1975,15 @@ public class QueryExecuterImplementation implements QueryExecutionInterface
 			
 		}
 		// single AND
-		else if(whereClause.contains("AND") && !whereClause.contains("OR"))
+		else if(whereClause.contains("AND") && !whereClause.contains("OR") && isJoinCondition == 0)
 		{
 			String operationOne = "";
 			String operatorOne = "";
 			String operationTwo = "";
 			String operatorTwo = "";
 			
-			StringTokenizer stringTokenizer = new StringTokenizer(whereClause, "where");
-			String temp = stringTokenizer.nextToken();
+			String []stringTokenizer = whereClause.split("where");
+			String temp = stringTokenizer[1];
 			String[] stringTokenizerWhere = temp.split("AND");
 			
 			String temp1 = stringTokenizerWhere[0];
@@ -1928,10 +2044,21 @@ public class QueryExecuterImplementation implements QueryExecutionInterface
 			int columnIndexOne = -1;
 			for(int count = 0; count < outputData.get(0).size(); count++)
 			{
-				if(outputData.get(0).get(count).contains("."+columnNameOne))
+				if(columnNameOne.contains("."))
 				{
-					columnIndexOne = count;
-					break;
+					if(outputData.get(0).get(count).equals(columnNameOne))
+					{
+						columnIndexOne = count;
+						break;
+					}
+				}
+				else
+				{
+					if(outputData.get(0).get(count).contains("."+columnNameOne))
+					{
+						columnIndexOne = count;
+						break;
+					}
 				}
 			}
 			if(columnIndexOne == -1)
@@ -2047,11 +2174,25 @@ public class QueryExecuterImplementation implements QueryExecutionInterface
 			int columnIndexTwo = -1;
 			for(int count = 0; count < outputData.get(0).size(); count++)
 			{
-				if(outputData.get(0).get(count).contains("."+columnNameTwo))
+				
+				if(columnNameTwo.contains("."))
 				{
-					columnIndexTwo = count;
-					break;
+					if(outputData.get(0).get(count).equals(columnNameTwo))
+					{
+						columnIndexTwo = count;
+						break;
+					}
 				}
+				else
+				{
+					if(outputData.get(0).get(count).contains("."+columnNameTwo))
+					{
+						columnIndexTwo = count;
+						break;
+					}
+				}
+					
+				
 			}
 			if(columnIndexTwo == -1)
 			{
@@ -2128,7 +2269,7 @@ public class QueryExecuterImplementation implements QueryExecutionInterface
 			
 		}
 		// signle OR
-		else if(whereClause.contains("OR") && !whereClause.contains("AND"))
+		else if(whereClause.contains("OR") && !whereClause.contains("AND") && isJoinCondition == 0)
 		{
 			
 			
@@ -2137,8 +2278,8 @@ public class QueryExecuterImplementation implements QueryExecutionInterface
 			String operationTwo = "";
 			String operatorTwo = "";
 			
-			StringTokenizer stringTokenizer = new StringTokenizer(whereClause, "where");
-			String temp = stringTokenizer.nextToken();
+			String[] stringTokenizer = whereClause.split("where");
+			String temp = stringTokenizer[1];
 			String[] stringTokenizerWhere = temp.split("OR");
 			
 			String temp1 = stringTokenizerWhere[0];
@@ -2199,10 +2340,21 @@ public class QueryExecuterImplementation implements QueryExecutionInterface
 			int columnIndexOne = -1;
 			for(int count = 0; count < outputData.get(0).size(); count++)
 			{
-				if(outputData.get(0).get(count).contains("."+columnNameOne))
+				if(columnNameOne.contains("."))
 				{
-					columnIndexOne = count;
-					break;
+					if(outputData.get(0).get(count).equals(columnNameOne))
+					{
+						columnIndexOne = count;
+						break;
+					}
+				}
+				else
+				{
+					if(outputData.get(0).get(count).contains("."+columnNameOne))
+					{
+						columnIndexOne = count;
+						break;
+					}
 				}
 			}
 			if(columnIndexOne == -1)
@@ -2323,10 +2475,21 @@ public class QueryExecuterImplementation implements QueryExecutionInterface
 			int columnIndexTwo = -1;
 			for(int count = 0; count < outputData.get(0).size(); count++)
 			{
-				if(outputData.get(0).get(count).contains("."+columnNameTwo))
+				if(columnNameTwo.contains("."))
 				{
-					columnIndexTwo = count;
-					break;
+					if(outputData.get(0).get(count).equals(columnNameTwo))
+					{
+						columnIndexTwo = count;
+						break;
+					}
+				}
+				else
+				{
+					if(outputData.get(0).get(count).contains("."+columnNameTwo))
+					{
+						columnIndexTwo = count;
+						break;
+					}
 				}
 			}
 			if(columnIndexTwo == -1)
@@ -2415,7 +2578,7 @@ public class QueryExecuterImplementation implements QueryExecutionInterface
 			
 			outputData = new ArrayList<>(test);
 		}
-		else if(whereClause.contains(".") && !whereClause.contains("AND") && !whereClause.contains("OR"))
+		else if(whereClause.contains(".") && !whereClause.contains("AND") && !whereClause.contains("OR") && numberOfDots == 2)
 		{
 			String[] stringTokenizer = whereClause.split("where");
 			String condition = stringTokenizer[1];
@@ -2547,11 +2710,24 @@ public class QueryExecuterImplementation implements QueryExecutionInterface
 				int columnIndexOne = -1;
 				for(int count = 0; count < outputData.get(0).size(); count++)
 				{
-					if(outputData.get(0).get(count).contains("."+columnNameOne))
+					
+					if(columnNameOne.contains("."))
 					{
-						columnIndexOne = count;
-						break;
+						if(outputData.get(0).get(count).equals(columnNameOne))
+						{
+							columnIndexOne = count;
+							break;
+						}
 					}
+					else
+					{
+						if(outputData.get(0).get(count).contains("."+columnNameOne))
+						{
+							columnIndexOne = count;
+							break;
+						}
+					}
+					
 				}
 				if(columnIndexOne == -1)
 				{
@@ -2669,11 +2845,23 @@ public class QueryExecuterImplementation implements QueryExecutionInterface
 				int columnIndexTwo = -1;
 				for(int count = 0; count < outputData.get(0).size(); count++)
 				{
-					if(outputData.get(0).get(count).contains("."+columnNameTwo))
+					if(columnNameTwo.contains("."))
 					{
-						columnIndexTwo = count;
-						break;
+						if(outputData.get(0).get(count).equals(columnNameTwo))
+						{
+							columnIndexTwo = count;
+							break;
+						}
 					}
+					else
+					{
+						if(outputData.get(0).get(count).contains("."+columnNameTwo))
+						{
+							columnIndexTwo = count;
+							break;
+						}
+					}
+					
 				}
 				if(columnIndexTwo == -1)
 				{
@@ -2790,11 +2978,24 @@ public class QueryExecuterImplementation implements QueryExecutionInterface
 				int columnIndexThree = -1;
 				for(int count = 0; count < outputData.get(0).size(); count++)
 				{
-					if(outputData.get(0).get(count).contains("."+columnNameThree))
+				
+					if(columnNameThree.contains("."))
 					{
-						columnIndexThree = count;
-						break;
+						if(outputData.get(0).get(count).equals(columnNameThree))
+						{
+							columnIndexThree = count;
+							break;
+						}
 					}
+					else
+					{
+						if(outputData.get(0).get(count).contains("."+columnNameThree))
+						{
+							columnIndexThree = count;
+							break;
+						}
+					}
+					
 				}
 				if(columnIndexThree == -1)
 				{
@@ -2952,10 +3153,22 @@ public class QueryExecuterImplementation implements QueryExecutionInterface
 				int columnIndexOne = -1;
 				for(int count = 0; count < outputData.get(0).size(); count++)
 				{
-					if(outputData.get(0).get(count).contains("."+columnNameOne))
+					
+					if(columnNameOne.contains("."))
 					{
-						columnIndexOne = count;
-						break;
+						if(outputData.get(0).get(count).equals(columnNameOne))
+						{
+							columnIndexOne = count;
+							break;
+						}
+					}
+					else
+					{
+						if(outputData.get(0).get(count).contains("."+columnNameOne))
+						{
+							columnIndexOne = count;
+							break;
+						}
 					}
 				}
 				if(columnIndexOne == -1)
@@ -3074,11 +3287,24 @@ public class QueryExecuterImplementation implements QueryExecutionInterface
 				int columnIndexTwo = -1;
 				for(int count = 0; count < outputData.get(0).size(); count++)
 				{
-					if(outputData.get(0).get(count).contains("."+columnNameTwo))
+
+					if(columnNameTwo.contains("."))
 					{
-						columnIndexTwo = count;
-						break;
+						if(outputData.get(0).get(count).equals(columnNameTwo))
+						{
+							columnIndexTwo = count;
+							break;
+						}
 					}
+					else
+					{
+						if(outputData.get(0).get(count).contains("."+columnNameTwo))
+						{
+							columnIndexTwo = count;
+							break;
+						}
+					}
+					
 				}
 				if(columnIndexTwo == -1)
 				{
@@ -3195,10 +3421,22 @@ public class QueryExecuterImplementation implements QueryExecutionInterface
 				int columnIndexThree = -1;
 				for(int count = 0; count < outputData.get(0).size(); count++)
 				{
-					if(outputData.get(0).get(count).contains("."+columnNameThree))
+					
+					if(columnNameThree.contains("."))
 					{
-						columnIndexThree = count;
-						break;
+						if(outputData.get(0).get(count).equals(columnNameThree))
+						{
+							columnIndexThree = count;
+							break;
+						}
+					}
+					else
+					{
+						if(outputData.get(0).get(count).contains("."+columnNameThree))
+						{
+							columnIndexThree = count;
+							break;
+						}
 					}
 				}
 				if(columnIndexThree == -1)
@@ -3286,6 +3524,190 @@ public class QueryExecuterImplementation implements QueryExecutionInterface
 			}
 			
 			
+		}
+		else if(isJoinCondition == 1 && whereClause.contains("AND"))
+		{
+
+			String[] stringTokenizer = whereClause.split("where");
+			String condition = stringTokenizer[1];
+			if(!condition.contains("="))
+			{
+				throw new Exception("only euqlaity join supported");
+			}
+			
+			String joins[] = condition.split("AND");
+			
+			
+		    String columns[] = joins[0].split("=");
+		    String column1 = columns[0];
+		    column1 = column1.replaceAll("\\s+","");
+		    String column2 = columns[1];
+		    column2 = column2.replaceAll("\\s+","");
+		    
+		    columns = joins[1].split("=");
+		    String column3 = columns[0];
+		    column3 = column3.replaceAll("\\s+","");
+		    String column4 = columns[1];
+		    column4 = column4.replaceAll("\\s+","");
+		    
+		    
+		    
+		    ArrayList<String> headers = outputData.get(0);
+		    
+		    if(!headers.contains(column1))
+		    {
+		    	throw new Exception("column not found");
+		    }
+		    else if(!headers.contains(column2))
+		    {
+		    	throw new Exception("column not found");
+		    }
+		    else if(!headers.contains(column3))
+		    {
+		    	throw new Exception("column not found");
+		    }
+		    else if(!headers.contains(column4))
+		    {
+		    	throw new Exception("column not found");
+		    }
+		    
+		    int index1 = headers.indexOf(column1);
+		    int index2 = headers.indexOf(column2);
+		    int index3 = headers.indexOf(column3);
+		    int index4 = headers.indexOf(column4);
+		    
+		    
+		    for(int count = 1; count < outputData.size(); count++)
+		    {
+		    	if(!outputData.get(count).get(index1).equals(outputData.get(count).get(index2)))
+		    	{
+		    		outputData.remove(count);
+		    		count--;
+		    	}
+		    	else if(!outputData.get(count).get(index3).equals(outputData.get(count).get(index4)))
+		    	{
+		    		outputData.remove(count);
+		    		count--;
+		    	}
+		    }
+		    
+		    if(index4  > index2)
+		    {
+		    	for(int count = 0; count < outputData.size(); count++)
+			    {
+			    	outputData.get(count).remove(index2);
+			    	outputData.get(count).remove(index4-1);
+			    }
+		    }
+		    else if( index4 == index2)
+		    {
+		    	for(int count = 0; count < outputData.size(); count++)
+			    {
+			    	outputData.get(count).remove(index2);
+			    }
+			   
+		    }
+		    else
+		    {
+		    	for(int count = 0; count < outputData.size(); count++)
+			    {
+			    	outputData.get(count).remove(index4);
+			    	outputData.get(count).remove(index2-1);
+			    }
+			    
+		    }
+		    
+		    
+
+			
+		}
+		else if( isJoinCondition == 1 && whereClause.contains("OR"))
+		{
+			String[] stringTokenizer = whereClause.split("where");
+			String condition = stringTokenizer[1];
+			if(!condition.contains("="))
+			{
+				throw new Exception("only euqlaity join supported");
+			}
+			
+			String joins[] = condition.split("OR");
+			
+		    String columns[] = joins[0].split("=");
+		    String column1 = columns[0];
+		    column1 = column1.replaceAll("\\s+","");
+		    String column2 = columns[1];
+		    column2 = column2.replaceAll("\\s+","");
+		    
+		    columns = joins[1].split("=");
+		    String column3 = columns[0];
+		    column3 = column3.replaceAll("\\s+","");
+		    String column4 = columns[1];
+		    column4 = column4.replaceAll("\\s+","");
+		    
+		    
+		    
+		    ArrayList<String> headers = outputData.get(0);
+		    
+		    if(!headers.contains(column1))
+		    {
+		    	throw new Exception("column not found");
+		    }
+		    else if(!headers.contains(column2))
+		    {
+		    	throw new Exception("column not found");
+		    }
+		    else if(!headers.contains(column3))
+		    {
+		    	throw new Exception("column not found");
+		    }
+		    else if(!headers.contains(column4))
+		    {
+		    	throw new Exception("column not found");
+		    }
+		    
+		    int index1 = headers.indexOf(column1);
+		    int index2 = headers.indexOf(column2);
+		    int index3 = headers.indexOf(column3);
+		    int index4 = headers.indexOf(column4);
+		    
+		    
+		    for(int count = 1; count < outputData.size(); count++)
+		    {
+		    	if(!outputData.get(count).get(index1).equals(outputData.get(count).get(index2)) && !outputData.get(count).get(index3).equals(outputData.get(count).get(index4)))
+		    	{
+		    		outputData.remove(count);
+		    		count--;
+		    	}
+		    	
+		    }
+		    
+		    if(index4  > index2)
+		    {
+		    	for(int count = 0; count < outputData.size(); count++)
+			    {
+			    	outputData.get(count).remove(index2);
+			    	outputData.get(count).remove(index4-1);
+			    }
+		    }
+		    else if( index4 == index2)
+		    {
+		    	for(int count = 0; count < outputData.size(); count++)
+			    {
+			    	outputData.get(count).remove(index2);
+			    }
+			   
+		    }
+		    else
+		    {
+		    	for(int count = 0; count < outputData.size(); count++)
+			    {
+			    	outputData.get(count).remove(index4);
+			    	outputData.get(count).remove(index2-1);
+			    }
+			    
+		    }
+		    
+		    
 		}
 		return outputData;
 	}

@@ -74,6 +74,29 @@ select table4.I from table4 where I > 100
 select table4.I,table4.J from table4 where I < 100
 select distinct table4.I,table4.J from table4 where I > 100
 select distinct I, J from table4 where I > 100
+select C,J from table1,table4
+select C,J from table1,table4 where C < 5000
+select C,J from table1,table4 where A < 200
+select A, G, I  from table1,table3,table4
+select tabl1.C,table4.J from table1,table4 where A < 200
+select * from table1,table4 where table1.A = table4.J
+select * from table2,table4 where table2.B = table4.I
+select * from table1 where table1.A = 640
+select * from table1 where A = 640
+select * from table1 where A = 640 AND B=773
+select * from table1 where table1.A = 640 AND table1.B=773
+select * from table2,table4 where table2.B = table4.I
+select table2.B from table2,table4 where table2.B = table4.I
+select B from table2,table4 where table2.B = table4.I
+select * from table2,table4 where table2.B > 1000 AND table4.I > 1000 OR table4.J < 10000
+select * from table2,table4 where table2.B > 1000 OR table4.I > 1000 AND table4.J < 10000
+select * from table2,table4 where table2.B=table4.I AND table2.D=table4.J
+select * from table2,table4 where table2.B=table4.I OR table2.D=table4.J
+select B from table2,table4 where table2.B=table4.I OR table2.D=table4.J
+
+
+
+
 
 
 
