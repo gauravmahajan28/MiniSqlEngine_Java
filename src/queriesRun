@@ -93,6 +93,7 @@ select * from table2,table4 where table2.B > 1000 OR table4.I > 1000 AND table4.
 select * from table2,table4 where table2.B=table4.I AND table2.D=table4.J
 select * from table2,table4 where table2.B=table4.I OR table2.D=table4.J
 select B from table2,table4 where table2.B=table4.I OR table2.D=table4.J
+select distinct B from table2,table4 where table2.B=table4.I OR table2.D=table4.J
 
 
 
